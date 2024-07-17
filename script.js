@@ -31,34 +31,14 @@ const mathOp = {
 };
 
 numButtons.forEach((num) => {
-    num.addEventListener('click', () => {
-        if (secondScreen.textContent[0] === '0' && !secondScreen.textContent.includes('.')) {
-            secondScreen.textContent = num.textContent;
-        } else {
-            secondScreen.textContent += `${num.textContent}`;
-        }
-    });
+    num.addEventListener('click', () => addNumber(num.textContent));
 });
 
 opButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        if (secondScreen.textContent.length > 0) {
-            if (sum === '' || firstScreen.textContent.includes('=')) {
-                sum = Number(secondScreen.textContent);
-            } else {
-                sum = mathOp[currentOp](sum, Number(secondScreen.textContent));
-            }
-        }
-
-        currentOp = button.textContent;
-        firstScreen.textContent = `${sum} ${currentOp}`;
-        secondScreen.textContent = '';
-    });
+    button.addEventListener('click', () => makeOperation(button.textContent));
 });
 
-clearButton.addEventListener('click', () => {
-    clearAll();
-});
+clearButton.addEventListener('click', () => clearAll());
 
 changeNumButton.addEventListener('click', () => {
     if (secondScreen.textContent[0] === '-') {
@@ -68,21 +48,37 @@ changeNumButton.addEventListener('click', () => {
     }
 });
 
-backButton.addEventListener('click', () => {
-    secondScreen.textContent = secondScreen.textContent.split('').slice(0, -1).join('');
-});
+backButton.addEventListener('click', () => removeNum());
 
-floatButton.addEventListener('click', () => {
-    if (!secondScreen.textContent.includes('.') && secondScreen.textContent.length > 0) {
-        secondScreen.textContent += '.';
-    }
-});
+floatButton.addEventListener('click', () => addFloat());
 
-equalButton.addEventListener('click', () => {
-    findAnswer();
-});
+equalButton.addEventListener('click', () => findAnswer());
+
+window.addEventListener('keydown', (e) => handleKeyPress(e));
 
 // Functions
+const addNumber = (num) => {
+    if (secondScreen.textContent[0] === '0' && !secondScreen.textContent.includes('.')) {
+        secondScreen.textContent = num;
+    } else {
+        secondScreen.textContent += `${num}`;
+    }
+};
+
+const makeOperation = (op) => {
+    if (secondScreen.textContent.length > 0) {
+        if (sum === '' || firstScreen.textContent.includes('=')) {
+            sum = Number(secondScreen.textContent);
+        } else {
+            sum = mathOp[currentOp](sum, Number(secondScreen.textContent));
+        }
+    }
+
+    currentOp = op;
+    firstScreen.textContent = `${sum} ${currentOp}`;
+    secondScreen.textContent = '';
+};
+
 const clearAll = () => {
     firstScreen.textContent = '';
     secondScreen.textContent = '';
@@ -101,5 +97,32 @@ const findAnswer = () => {
             firstScreen.textContent = `${sum} ${currentOp} ${secondScreenNumber} =`;
             secondScreen.textContent = mathOp[currentOp](sum, secondScreenNumber);
         }
+    }
+};
+
+const addFloat = () => {
+    if (!secondScreen.textContent.includes('.') && secondScreen.textContent.length > 0) {
+        secondScreen.textContent += '.';
+    }
+};
+
+const removeNum = () => {
+    secondScreen.textContent = secondScreen.textContent.split('').slice(0, -1).join('');
+};
+
+const handleKeyPress = (e) => {
+    if (e.key >= 0 && e.key <= 9) {
+        addNumber(e.key);
+    } else if (e.key === 'Enter' || e.key === '=') {
+        e.preventDefault();
+        findAnswer();
+    } else if ('+-/*'.includes(e.key)) {
+        makeOperation(e.key);
+    } else if (e.key === 'Backspace') {
+        removeNum();
+    } else if (e.key === 'Delete') {
+        clearAll();
+    } else if (e.key === '.') {
+        addFloat();
     }
 };
